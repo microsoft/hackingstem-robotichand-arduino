@@ -458,7 +458,7 @@ void sendDataToSerial()
 
   // Hand 1 sensor data for visualization in Machines That Emulate Humans workbook. 
   Serial.print(mDELIMITER);
-  Serial.print(sensor0);
+  Serial.print(int(sensor0/.6));
   
   Serial.print(mDELIMITER);
   Serial.print(sensor1);
