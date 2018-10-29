@@ -1,38 +1,45 @@
-/*
- * 
+//===----------------__ Hacking STEM RoboticHand Arduino __------------===//
+// For use with the Machines That Emulate Humans lesson plan available from 
+// Microsoft Education Workshop at http://aka.ms/hackingSTEM
+//
+// Overview:
+// This project relies upon the construction of a sensorized glove that is 
+// used to generatesignals that simultaneously drive a set of servos and 
+// display data visualization in Microsoft Excel. 
 
-  This code works with the Machines That Emulate Humans workbook and lesson plan
-  Available from the Microsoft Education Workshop at http://aka.ms/hackingSTEM   
-  It also contians code for the Rock, Paper, Scissors (RPS) workbook
-   
-  This projects uses an Arduino UNO microcontroller board. More information can
-  be found by visiting the Arduino website: https://www.arduino.cc/en/main/arduinoBoardUno
- 
-  See https://www.arduino.cc/en/Guide/HomePage for board specific details and tutorials.
+// The RPS functionality captures the classic hand gestures of rock (all 
+// fingers full flexion), paper (all fingers full extension), and 
+// scissors (thumb, ring, pinky full flexion, and index, middle full 
+// extension). 
 
-  This project relies upon the construction of a sensorized glove that is used to generate
-  signals that simultaneously drive a set of servos and display data visualization in Microsoft Excel. 
+// The RPS code uses the game loop design pattern so that differnet time
+// intervals can be used simultaneously to control output frequency. 
+// This is necessary because the serial data needs to be sent at 75 
+// millisecond intervals but the servo need to be updated every 15 
+// milliseconds. This is same concept found in Blink Without Delay.
 
-  The RPS functionality captures the classic hand gestures of rock (all fingers full flexion), 
-  paper (all fingers full extension), and scissors (thumb, ring, pinky full flexion, and index, middle full extension). 
-  
-  The RPS code uses the game loop design pattern so that differnet time intervals can be used simultaneously
-  to control output frequency. This is necessary because the serial data needs to be sent at 75 millisecond
-  intervals but the servo need to be updated every 15 milliseconds. This is same concept found in Blink Without Delay.
-
-  A match of RPS is started after receiving a trigger from Excel. This resets several program flow variables 
-  and storage arrays. The match consists of rounds. Each round consists of a countdown sequence and the 
-  detection of hand gesture. At the end of the rounds a match ending flag is switched. After a pause the
-  final results are displaued in Excel. 
-
-  David Myka, 2017 Microsoft Education Workshop
- * 
- */
+// A match of RPS is started after receiving a trigger from Excel. 
+// This resets several program flow variables and storage arrays. 
+// The match consists of rounds. Each round consists of a countdown 
+// sequence and the detection of hand gesture. At the end of the rounds
+// a match ending flag is switched. After a pause the final results are 
+// displayed in Excel. 
+//
+// This project uses an Arduino UNO microcontroller board, information at:
+// https://www.arduino.cc/en/main/arduinoBoardUno
+//
+// Comments, contributions, suggestions, bug reports, and feature requests
+// are welcome! For source code and bug reports see:
+// http://github.com/[TODO github path to Hacking STEM]
+//
+// Copyright 2017 David Myka Microsoft EDU Workshop - HackingSTEM
+// MIT License terms detailed in LICENSE.txt 
+//===----------------------------------------------------------------------===//
 
 #include <Servo.h>  // Arduino servo library
 
 // Constants that appear in the serial message.
-const String mDELIMETER = ",";            // cordoba add-in expects a comma delimeted string
+const String mDELIMITER = ",";  // datastreamer expects comma delimited string
 
 String mInputString = "";                 // string variable to hold incoming data
 boolean mStringComplete = false;          // variable to indicate mInputString is complete (newline found)
@@ -87,7 +94,7 @@ const int mNUM_SENSORS = 5;               // 5 fingers
 int mMinMax[mNUM_SENSORS][2] = {0};
 
 // 7x16 Array to store last 16 values for eliminating spikes
-const int NUM_SAMPLES = 16;
+const int NUM_SAMPLES = 256;
 int smoothingIndex = 0;
 int mSensorSmoothing[mNUM_SENSORS][NUM_SAMPLES] = {0};
 int mSensorTotal[mNUM_SENSORS] = {0};
@@ -117,7 +124,7 @@ void setup() {
   Serial.begin(9600);  
   
   // Hand 1 servos
-  servo0.attach(2); servo1.attach(3); servo2.attach(4); servo3.attach(5); servo4.attach(6);
+  servo0.attach(3); servo1.attach(5); servo2.attach(6); servo3.attach(9); servo4.attach(10);
 }
 
 /*
@@ -283,7 +290,7 @@ void processSensorsServos()
 void readSensors()
 {
   // Hand sensor reads from analog pins
-  sensor0 = getSensorValue(0);  // p-thumb
+  sensor0 = getThumbSensorValue(0);  // p-thumb
   sensor1 = getSensorValue(1);  // i-index
   sensor2 = getSensorValue(2);  // m-middle
   sensor3 = getSensorValue(3);  // a-ring
@@ -330,6 +337,17 @@ int getSensorValue(int sensorPin)
   if(sensorValue > mMinMax[sensorPin][1]) {mMinMax[sensorPin][1] = sensorValue;}  // set max  
   // Map the raw ADC values (5v to range 0-1023) to range 0-100
   sensorValue = map(sensorValue, mMinMax[sensorPin][0], mMinMax[sensorPin][1], mSENSOR_MIN, mSENSOR_MAX);
+  return sensorValue;
+}
+
+int getThumbSensorValue(int sensorPin)
+{   
+  int sensorValue = analogRead(sensorPin);                // read sensor values  
+  sensorValue = smooth(sensorValue, sensorPin);           // smooth out voltage peaks  
+  if(sensorValue < mMinMax[sensorPin][0]) {mMinMax[sensorPin][0] = sensorValue;}  // set min
+  if(sensorValue > mMinMax[sensorPin][1]) {mMinMax[sensorPin][1] = sensorValue;}  // set max  
+  // Map the raw ADC values (5v to range 0-1023) to range 0-100
+  sensorValue = map(sensorValue, mMinMax[sensorPin][0], mMinMax[sensorPin][1], mSENSOR_MIN, mSENSOR_MAX-40);
   return sensorValue;
 }
 
@@ -429,71 +447,71 @@ void sendDataToSerial()
   //Program flow variables for Rock,Paper,Scissors workbook
   Serial.print(0);                 //mWorkbookMode - not used anymore;
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mMatchTrigger);     // Starts a Rock,Paper,Scissors match
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mMatchComplete);    // Flag for match completion
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mCountDown);        // Countdown in between match rounds
 
   // Hand 1 sensor data for visualization in Machines That Emulate Humans workbook. 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(sensor0);
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(sensor1);
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(sensor2);
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(sensor3);
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(sensor4);
   
   //Current round gesture variables for Rock,Paper,Scissors workbook
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mRound);
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer1RPSgesture);
   
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer2RPSgesture);
 
   //Player1 gestures rounds 1-5
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer1rounds[0]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer1rounds[1]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer1rounds[2]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer1rounds[3]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer1rounds[4]);  
   
   //Player2 gestures rounds 1-5
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer2rounds[0]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer2rounds[1]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer2rounds[2]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer2rounds[3]);
 
-  Serial.print(mDELIMETER);
+  Serial.print(mDELIMITER);
   Serial.print(mPlayer2rounds[4]);
 
   Serial.println();
