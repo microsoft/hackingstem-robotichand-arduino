@@ -1,35 +1,40 @@
 /*
- * 
+ *
 
   This code works with the Machines That Emulate Humans workbook and lesson plan
-  Available from the Microsoft Education Workshop at 
+  Available from the Microsoft Education Workshop at
   https://www.microsoft.com/en-us/education/education-workshop/robotic-hand.aspx
-  It also contians code for the Rock, Paper, Scissors (RPS) workbook
-  
+  It also contains code for the Rock, Paper, Scissors (RPS) workbook
+
   This projects uses an Arduino UNO microcontroller board. More information can
   be found by visiting the Arduino website: https://www.arduino.cc/en/main/arduinoBoardUno
- 
+
   See https://www.arduino.cc/en/Guide/HomePage for board specific details and tutorials.
 
   This project relies upon the construction of a sensorized glove that is used to generate
-  signals that simultaneously drive a set of servos and display data visualization in Microsoft Excel. 
+  signals that simultaneously drive a set of servos and display data visualization in Microsoft Excel.
 
-  The RPS functionality captures the classic hand gestures of rock (all fingers full flexion), 
+  The RPS functionality captures the classic hand gestures of rock (all fingers full flexion),
   paper (all fingers full extension), and scissors (thumb, ring, pinky full flexion, and index, middle full extension). 
-  
+
   The RPS code uses the game loop design pattern so that differnet time intervals can be used simultaneously
   to control output frequency. This is necessary because the serial data needs to be sent at 75 millisecond
   intervals but the servo need to be updated every 15 milliseconds. This is same concept found in Blink Without Delay.
 
-  A match of RPS is started after receiving a trigger from Excel. This resets several program flow variables 
-  and storage arrays. The match consists of rounds. Each round consists of a countdown sequence and the 
+  A match of RPS is started after receiving a trigger from Excel. This resets several program flow variables
+  and storage arrays. The match consists of rounds. Each round consists of a countdown sequence and the
   detection of hand gesture. At the end of the rounds a match ending flag is switched. After a pause the
-  final results are displaued in Excel. 
+  final results are displayed in Excel.
+
+  Comments, contributions, suggestions, bug reports, and feature requests
+  are welcome! For source code and bug reports see:
+  https://github.com/microsoft/hackingstem-robotichand-arduino
+
 
   David Myka, 2017 Microsoft Education Workshop
- 
+
   http://aka.ms/hackingSTEM
- * 
+ *
  */
 
 #include <Servo.h>  // Arduino servo library
@@ -40,7 +45,7 @@ const String mDELIMETER = ",";            // cordoba add-in expects a comma deli
 String mInputString = "";                 // string variable to hold incoming data
 boolean mStringComplete = false;          // variable to indicate mInputString is complete (newline found)
 
-// Time intervals used to control delays in serial messaging, servo output, and program flow. 
+// Time intervals used to control delays in serial messaging, servo output, and program flow.
 int mServo_Interval = 35;                 // Interval between servo position updates
 unsigned long mServo_PreviousTime = millis();    // Timestamp to track interval
 
