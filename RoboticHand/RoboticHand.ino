@@ -2,9 +2,10 @@
  * 
 
   This code works with the Machines That Emulate Humans workbook and lesson plan
-  Available from the Microsoft Education Workshop at http://aka.ms/hackingSTEM   
+  Available from the Microsoft Education Workshop at 
+  https://www.microsoft.com/en-us/education/education-workshop/robotic-hand.aspx
   It also contians code for the Rock, Paper, Scissors (RPS) workbook
-   
+  
   This projects uses an Arduino UNO microcontroller board. More information can
   be found by visiting the Arduino website: https://www.arduino.cc/en/main/arduinoBoardUno
  
@@ -26,6 +27,8 @@
   final results are displaued in Excel. 
 
   David Myka, 2017 Microsoft Education Workshop
+ 
+  http://aka.ms/hackingSTEM
  * 
  */
 
