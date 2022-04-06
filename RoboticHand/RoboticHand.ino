@@ -3,7 +3,7 @@
 
   This code works with the Machines That Emulate Humans workbook and lesson plan
   Available from the Microsoft Education Workshop at
-  https://www.microsoft.com/en-us/education/education-workshop/robotic-hand.aspx
+  https://education.microsoft.com/hackingStem/lesson/20647903
   It also contains code for the Rock, Paper, Scissors (RPS) workbook
 
   This projects uses an Arduino UNO microcontroller board. More information can
